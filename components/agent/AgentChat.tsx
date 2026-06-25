@@ -37,11 +37,11 @@ interface SwapQuote {
   estimatedOutput: string;
 }
 
-const EXAMPLE_PROMPTS = [
-  "Swap 1 USDC to EURC",
-  "Swap 2 USDC to cirBTC",
-  "What is Arc Network?",
-  "1 USDC send to 0xe2C1F5c7e685e7aCe8B9D83c9f1B5e7C4D3A2B1F",
+const EXAMPLE_PROMPTS: { label: string; value: string }[] = [
+  { label: "Swap 1 USDC to EURC",    value: "Swap 1 USDC to EURC" },
+  { label: "Swap 2 USDC to cirBTC",  value: "Swap 2 USDC to cirBTC" },
+  { label: "What is Arc Network?",   value: "What is Arc Network?" },
+  { label: "1 USDC send to 0xef351...", value: "1 USDC send to " },
 ];
 
 // Kullanıcı mesajından swap intent algıla
@@ -506,13 +506,17 @@ export function AgentChat() {
                 </p>
                 <div className="inline-flex flex-wrap gap-3 justify-center">
                   {EXAMPLE_PROMPTS.map(p => (
-                    <button key={p} onClick={() => sendMessage(p)}
+                    <button key={p.label}
+                      onClick={() => {
+                        setInput(p.value);
+                        if (p.value !== "1 USDC send to ") sendMessage(p.value);
+                      }}
                       className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all border"
                       style={{ borderColor: "var(--border)", background: "var(--bg-card)", color: "var(--text-primary)" }}
                       onMouseEnter={e => (e.currentTarget.style.borderColor = "#C9693A")}
                       onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--border)")}
                     >
-                      {p}
+                      {p.label}
                     </button>
                   ))}
                 </div>

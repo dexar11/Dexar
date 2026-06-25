@@ -39,11 +39,13 @@ function rankEmoji(rank: number): string {
 }
 
 async function fetchLeaderboard(limit = 500) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("wallet_scores")
     .select("address, wallet_score, total_txs, wallet_age_days, base_volume_usd")
     .order("wallet_score", { ascending: false })
     .limit(limit);
+  if (error) console.error("[leaderboard] fetch error:", error.message, error.details);
+  else console.log("[leaderboard] fetched rows:", data?.length ?? 0);
   return data ?? [];
 }
 

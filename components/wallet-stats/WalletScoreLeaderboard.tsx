@@ -68,7 +68,7 @@ export function WalletScoreLeaderboard({
   const { data: allEntries = [], isLoading } = useQuery({
     queryKey:  ["arc-wallet-leaderboard", refreshKey],
     queryFn:   () => fetchLeaderboard(500),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
     gcTime:    5 * 60 * 1000,
   });
 

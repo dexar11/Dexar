@@ -54,9 +54,13 @@ async function hasXFollowReward(address: string): Promise<boolean> {
 async function markXFollowReward(address: string) {
   const { data } = await supabase
     .from("user_scores")
-    .select("score")
+    .select("score, x_follow_claimed")
     .eq("address", address.toLowerCase())
     .single();
+
+  // Guard: already claimed
+  if (data?.x_follow_claimed) throw new Error("Already claimed");
+
   const currentScore = data?.score ?? 0;
   await supabase.from("user_scores").upsert({
     address:          address.toLowerCase(),
@@ -130,7 +134,17 @@ export default function RewardPage() {
 
   async function handleXFollow() {
     if (!address) { toast.error("Connect your wallet first"); return; }
-    if (xFollowState !== "idle") return;
+    if (xFollowState !== "idle" || xAlreadyClaimed) return;
+
+    // Double-check Supabase before starting — prevent farm
+    const alreadyClaimed = await hasXFollowReward(address);
+    if (alreadyClaimed) {
+      setXFollowState("done");
+      setXAlreadyClaimed(true);
+      toast.info("You already claimed this reward.");
+      return;
+    }
+
     window.open("https://x.com/dexar_app", "_blank");
     setXFollowState("countdown");
     setXCountdown(10);
@@ -142,10 +156,18 @@ export default function RewardPage() {
     }, 1000);
     setTimeout(async () => {
       try {
+        // Check once more before awarding (race condition guard)
+        const stillFresh = !(await hasXFollowReward(address));
+        if (!stillFresh) {
+          setXFollowState("done");
+          setXAlreadyClaimed(true);
+          toast.info("Reward already claimed.");
+          return;
+        }
         await markXFollowReward(address);
         setXFollowState("done");
         setXAlreadyClaimed(true);
-        toast.success("+1000 points! Thanks for following Arc on X 🎉");
+        toast.success("+1000 points! Thanks for following on X 🎉");
         if (address) await loadMinted(address);
       } catch {
         toast.error("Failed to award points — try again");

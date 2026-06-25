@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 import { addScore } from "@/lib/supabase";
 
-const SYSTEM_PROMPT = `You are the Arc Aggregator AI Assistant — an expert on the Arc Network (a Layer-1 blockchain by Circle).
+const SYSTEM_PROMPT = `You are the Dexar AI Assistant — an expert on the Arc Network (a Layer-1 blockchain by Circle).
 
 You help users with:
 - Swapping tokens on Arc Testnet (USDC, EURC, cirBTC)
@@ -43,9 +43,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Too many requests. Please wait." }, { status: 429 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 503 });
+    return NextResponse.json({ error: "GROQ_API_KEY not configured" }, { status: 503 });
   }
 
   const { messages, userAddress } = await req.json();
@@ -53,8 +53,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "messages required" }, { status: 400 });
   }
 
-  const client = new Anthropic({ apiKey });
-  const history: Anthropic.MessageParam[] = messages
+  const client = new Groq({ apiKey });
+
+  const history = messages
     .slice(-8)
     .map((m: { role: string; content: string }) => ({
       role: (m.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
@@ -62,19 +63,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }));
 
   try {
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5",
+    const response = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       max_tokens: 512,
-      system: SYSTEM_PROMPT,
-      messages: history,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...history,
+      ],
     });
 
-    const text = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map(b => b.text)
-      .join("\n");
+    const text = response.choices[0]?.message?.content ?? "";
 
-    // AI üzerinden işlem algıla — kullanıcı işlem isteği yaptıysa puan ver
+    // İşlem algıla — puan ver
     const lastUserMsg = history.filter(m => m.role === "user").slice(-1)[0]?.content ?? "";
     const isSwapRequest   = /swap|exchange|convert/i.test(String(lastUserMsg));
     const isBridgeRequest = /bridge/i.test(String(lastUserMsg));

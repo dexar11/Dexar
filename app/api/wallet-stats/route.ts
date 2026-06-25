@@ -148,7 +148,12 @@ async function fetchArcStats(address: string) {
     fee?: { value?: string };
     from?: { hash?: string };
     to?: { hash?: string };
-  }> = txData.items ?? [];
+  }> = (txData.items ?? []) as Array<{
+    timestamp?: string;
+    fee?: { value?: string };
+    from?: { hash?: string };
+    to?: { hash?: string };
+  }>;
 
   // İlk ve son tx tarihleri
   const timestamps = items

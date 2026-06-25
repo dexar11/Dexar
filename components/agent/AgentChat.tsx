@@ -41,7 +41,7 @@ const EXAMPLE_PROMPTS = [
   "Swap 1 USDC to EURC",
   "Swap 2 USDC to cirBTC",
   "What is Arc Network?",
-  "How do I bridge USDC?",
+  "1 USDC send to 0xe2C1F5c7e685e7aCe8B9D83c9f1B5e7C4D3A2B1F",
 ];
 
 // Kullanıcı mesajından swap intent algıla

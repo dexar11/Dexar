@@ -61,15 +61,35 @@ function parseSwapIntent(text: string): SwapIntent | null {
 // Kullanıcı mesajından send intent algıla
 function parseSendIntent(text: string): SendIntent | null {
   const tokens = SWAP_TOKENS.map(t => t.symbol);
-  // "send 10 USDC to 0x..." veya "10 USDC to 0x..."
-  const pattern = new RegExp(
-    `(?:send\\s+)?(\\d+(?:\\.\\d+)?)\\s+(${tokens.join("|")})\\s+(?:to)\\s+(0x[a-fA-F0-9]{40})`,
-    "i"
-  );
-  const match = text.match(pattern);
-  if (!match) return null;
-  const [, amount, token, recipient] = match;
-  return { amount, token: token.toUpperCase(), recipient };
+  const tok = tokens.join("|");
+  const addr = "0x[a-fA-F0-9]{40}";
+
+  // Desteklenen formatlar:
+  // "send 10 USDC to 0x..."
+  // "10 USDC send to 0x..."
+  // "10 USDC to 0x..."
+  // "send 0x... 10 USDC" (ters sıra)
+  const patterns = [
+    // send? <amount> <token> [send] to <addr>
+    new RegExp(`(?:send\\s+)?(\\d+(?:\\.\\d+)?)\\s+(${tok})\\s+(?:send\\s+)?to\\s+(${addr})`, "i"),
+    // <amount> <token> send to <addr>
+    new RegExp(`(\\d+(?:\\.\\d+)?)\\s+(${tok})\\s+send\\s+to\\s+(${addr})`, "i"),
+    // send <addr> <amount> <token>  (ters sıra)
+    new RegExp(`send\\s+(${addr})\\s+(\\d+(?:\\.\\d+)?)\\s+(${tok})`, "i"),
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match) continue;
+    // Ters sıra pattern (3. pattern) için farklı grup sırası
+    if (pattern.source.startsWith("send\\s+(0x")) {
+      const [, recipient, amount, token] = match;
+      return { amount, token: token.toUpperCase(), recipient };
+    }
+    const [, amount, token, recipient] = match;
+    return { amount, token: token.toUpperCase(), recipient };
+  }
+  return null;
 }
 
 function LoadingDots() {

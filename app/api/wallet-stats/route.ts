@@ -67,7 +67,42 @@ function formatRoutisAge(isoDate: string | null): string {
   return `${years}y ${remMon}mo`;
 }
 
-async function fetchArcStats(address: string) {
+async function fetchEthFirstTx(address: string): Promise<string | null> {
+  const key = process.env.ALCHEMY_ETH_API_KEY;
+  if (!key) return null;
+  try {
+    // Alchemy getAssetTransfers — en eski giden tx'i al (fromBlock=0, sort=asc, limit=1)
+    const res = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${key}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: 1,
+        jsonrpc: "2.0",
+        method: "alchemy_getAssetTransfers",
+        params: [{
+          fromBlock:    "0x0",
+          toBlock:      "latest",
+          fromAddress:  address,
+          category:     ["external", "erc20", "erc721", "erc1155"],
+          withMetadata: true,
+          excludeZeroValue: false,
+          maxCount:     "0x1",
+          order:        "asc",
+        }],
+      }),
+    });
+    const json = await res.json();
+    const transfers = json?.result?.transfers ?? [];
+    if (transfers.length === 0) return null;
+    const blockTime = transfers[0]?.metadata?.blockTimestamp;
+    return blockTime ? new Date(blockTime).toISOString() : null;
+  } catch (e) {
+    console.error("[eth-first-tx] error:", e);
+    return null;
+  }
+}
+
+
   const rpcUrl     = `https://rpc.testnet.arc.network`;
   const explorerV2 = `https://testnet.arcscan.app/api/v2`;
 
@@ -238,16 +273,24 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const [arcStats, supaStats] = await Promise.all([
+    const [arcStats, supaStats, ethFirstTx] = await Promise.all([
       fetchArcStats(address),
       fetchSupabaseStats(address),
+      fetchEthFirstTx(address),
     ]);
 
     const { totalTxs, usdcBalance, firstTxDate, lastTxDate, gasFees, activeDays, uniqueAddresses, onchainVolume } = arcStats;
-    const { swapCount, volumeUsd, firstSwapDate } = supaStats;
+    const { firstSwapDate } = supaStats;
 
-    // Wallet age — ArcScan'dan firstTxDate, yoksa Supabase'den firstSwapDate
-    const firstDateStr = firstTxDate ?? firstSwapDate ?? null;
+    // Wallet age — en eski tarih: Arc firstTx, Ethereum firstTx, Supabase firstSwap
+    const candidates = [
+      arcStats.firstTxDate,
+      ethFirstTx,
+      supaStats.firstSwapDate,
+    ].filter((d): d is string => !!d);
+    const firstDateStr = candidates.length > 0
+      ? candidates.reduce((oldest, d) => new Date(d) < new Date(oldest) ? d : oldest)
+      : null;
     const walletAgeMonths = firstDateStr
       ? (Date.now() - new Date(firstDateStr).getTime()) / (1000 * 60 * 60 * 24 * 30)
       : 0;

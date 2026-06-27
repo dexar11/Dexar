@@ -10,7 +10,7 @@ import { ARC_TOKENS, arcTestnet } from "@/lib/arc-kit";
 import { getAdapter } from "@/lib/adapter";
 import { addScore } from "@/lib/supabase";
 
-const SEND_TOKENS = ARC_TOKENS;
+const SEND_TOKENS = ARC_TOKENS.filter(t => t.symbol !== "NATIVE");
 
 /* ── Custom token selector with logos ── */
 function TokenSelector({

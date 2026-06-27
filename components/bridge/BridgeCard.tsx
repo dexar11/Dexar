@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useAccount, useSwitchChain, useBalance } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { AppKit } from "@circle-fin/app-kit";
@@ -11,6 +11,74 @@ import type { BridgeChainId } from "@/lib/arc-kit";
 import { getAdapter } from "@/lib/adapter";
 import { patchCircleFetch } from "@/lib/patch-circle-fetch";
 import { addScore } from "@/lib/supabase";
+
+/* ── Custom chain selector ── */
+function ChainSelector({
+  value, onChange, exclude,
+}: {
+  value: BridgeChainId;
+  onChange: (v: BridgeChainId) => void;
+  exclude: BridgeChainId;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const options = BRIDGE_CHAINS.filter(c => c.id !== exclude);
+  const selected = BRIDGE_CHAINS.find(c => c.id === value)!;
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold border transition-all"
+        style={{ background: "var(--bg-card)", borderColor: open ? "#C9693A" : "var(--border)", color: "var(--text-primary)", minWidth: 140 }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={selected.logoUrl} alt={selected.name} width={16} height={16} className="rounded-full shrink-0"
+          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        <span className="flex-1 text-left truncate">{selected.name}</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 rounded-xl border shadow-lg z-50 overflow-hidden"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border)", minWidth: 160 }}>
+          {options.map(c => (
+            <button key={c.id} onClick={() => { onChange(c.id as BridgeChainId); setOpen(false); }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all text-left"
+              style={{
+                background: c.id === value ? "var(--bg-input)" : undefined,
+                color: "var(--text-primary)",
+              }}
+              onMouseEnter={e => { if (c.id !== value) e.currentTarget.style.background = "var(--bg-input)"; }}
+              onMouseLeave={e => { if (c.id !== value) e.currentTarget.style.background = ""; }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={c.logoUrl} alt={c.name} width={18} height={18} className="rounded-full shrink-0"
+                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <span>{c.name}</span>
+              {c.id === value && (
+                <svg className="ml-auto" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9693A" strokeWidth="2.5">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function BridgeCard() {
   const { address, chainId } = useAccount();
@@ -161,16 +229,7 @@ export function BridgeCard() {
               className="flex-1 bg-transparent text-xl font-bold outline-none min-w-0 w-0"
               style={{ color: "var(--text-primary)" }}
             />
-            <select
-              value={fromChain}
-              onChange={e => setFromChain(e.target.value as BridgeChainId)}
-              className="rounded-lg px-2 py-1 text-xs font-semibold border outline-none shrink-0"
-              style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--text-primary)" }}
-            >
-              {BRIDGE_CHAINS.filter(c => c.id !== toChain).map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <ChainSelector value={fromChain} onChange={setFromChain} exclude={toChain} />
           </div>
           {/* 25/50/75/MAX buttons */}
           {address && (
@@ -220,16 +279,7 @@ export function BridgeCard() {
             <div className="flex-1 text-xl font-bold min-w-0 w-0 truncate" style={{ color: "var(--text-secondary)" }}>
               {amount ? amount : "0.00"}
             </div>
-            <select
-              value={toChain}
-              onChange={e => setToChain(e.target.value as BridgeChainId)}
-              className="rounded-lg px-2 py-1 text-xs font-semibold border outline-none shrink-0"
-              style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--text-primary)" }}
-            >
-              {BRIDGE_CHAINS.filter(c => c.id !== fromChain).map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <ChainSelector value={toChain} onChange={setToChain} exclude={fromChain} />
           </div>
         </div>
 

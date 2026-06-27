@@ -36,11 +36,11 @@ export const SWAP_TOKENS = ARC_TOKENS.filter(t => t.symbol !== "NATIVE").map(t =
 
 // Bridge supported chains (testnet)
 export const BRIDGE_CHAINS = [
-  { id: "Arc_Testnet",      name: "Arc Testnet",      chainId: 5042002,  logoUrl: "https://testnet.arcscan.app/favicon.ico" },
-  { id: "Ethereum_Sepolia", name: "Ethereum Sepolia", chainId: 11155111, logoUrl: "https://assets.coingecko.com/coins/images/279/large/ethereum.png" },
-  { id: "Base_Sepolia",     name: "Base Sepolia",     chainId: 84532,    logoUrl: "https://assets.coingecko.com/coins/images/35110/large/symbol_transparent.png" },
-  { id: "Arbitrum_Sepolia", name: "Arbitrum Sepolia", chainId: 421614,   logoUrl: "https://assets.coingecko.com/coins/images/16547/large/photo_2023-03-29_21.47.00.jpeg" },
-  { id: "Optimism_Sepolia", name: "OP Sepolia",       chainId: 11155420, logoUrl: "https://assets.coingecko.com/coins/images/25244/large/Optimism.png" },
+  { id: "Arc_Testnet",      name: "Arc Testnet",      chainId: 5042002,  logoUrl: "/arc logo.jpg" },
+  { id: "Ethereum_Sepolia", name: "Ethereum Sepolia", chainId: 11155111, logoUrl: "/eth sepolia  logo.jpg" },
+  { id: "Base_Sepolia",     name: "Base Sepolia",     chainId: 84532,    logoUrl: "/base logo.jpg" },
+  { id: "Arbitrum_Sepolia", name: "Arbitrum Sepolia", chainId: 421614,   logoUrl: "/arb logo.jpg" },
+  { id: "Optimism_Sepolia", name: "OP Sepolia",       chainId: 11155420, logoUrl: "/op logo.jpg" },
 ] as const;
 
 export type BridgeChainId = typeof BRIDGE_CHAINS[number]["id"];

@@ -35,7 +35,8 @@ const links = [
 
 export function SocialButtons() {
   return (
-    <div className="flex items-center gap-1">
+    // mb-16 on mobile to stay above the bottom nav bar (64px), mb-5 on desktop
+    <div className="fixed bottom-16 right-4 z-50 flex flex-row gap-1.5 md:bottom-5 md:right-5">
       {links.map(({ href, label, icon }) => (
         <a
           key={label}
@@ -43,11 +44,12 @@ export function SocialButtons() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border transition-all hover:scale-105"
+          className="flex h-9 w-9 items-center justify-center rounded-xl border transition-all hover:scale-105"
           style={{
-            background:  "var(--bg-input)",
+            background:  "var(--bg-card)",
             borderColor: "var(--border)",
             color:       "var(--text-secondary)",
+            boxShadow:   "0 2px 8px rgba(0,0,0,0.08)",
           }}
           onMouseEnter={e => {
             (e.currentTarget as HTMLElement).style.borderColor = "#C9693A";

@@ -4,7 +4,6 @@ import Link         from "next/link";
 import { usePathname } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useTheme } from "@/lib/theme";
-import { SocialButtons } from "@/components/ui/SocialButtons";
 
 /* ── Nav emoji icons ── */
 const Emoji = ({ e }: { e: string }) => <span style={{ fontSize: 14, lineHeight: 1 }}>{e}</span>;
@@ -107,11 +106,8 @@ export function Header() {
           })}
         </nav>
 
-        {/* Right: social + theme + wallet */}
+        {/* Right: theme + wallet */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="hidden md:flex">
-            <SocialButtons />
-          </div>
           <ThemeToggle />
 
           <ConnectButton.Custom>

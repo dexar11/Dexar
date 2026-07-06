@@ -1,5 +1,5 @@
-import { DocsModal } from "@/components/docs/DocsModal";
+import { redirect } from "next/navigation";
 
 export default function DocsPage() {
-  return <DocsModal />;
+  redirect("/");
 }

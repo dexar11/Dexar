@@ -4,6 +4,8 @@ import Link         from "next/link";
 import { usePathname } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useTheme } from "@/lib/theme";
+import { useState } from "react";
+import { DocsModal } from "@/components/docs/DocsModal";
 
 /* ── Nav emoji icons ── */
 const Emoji = ({ e }: { e: string }) => <span style={{ fontSize: 14, lineHeight: 1 }}>{e}</span>;
@@ -71,12 +73,14 @@ function ArbiLogo() {
 /* ── Header ── */
 export function Header() {
   const pathname = usePathname();
+  const [showDocs, setShowDocs] = useState(false);
 
   return (
-    <header
-      className="sticky top-0 z-50 border-b backdrop-blur-sm"
-      style={{ borderColor: "var(--border)", background: "var(--bg-primary)" }}
-    >
+    <>
+      <header
+        className="sticky top-0 z-50 border-b backdrop-blur-sm"
+        style={{ borderColor: "var(--border)", background: "var(--bg-primary)" }}
+      >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 relative">
 
         {/* Logo */}
@@ -108,8 +112,8 @@ export function Header() {
 
         {/* Right: docs + theme + wallet */}
         <div className="flex items-center gap-2 shrink-0">
-          <Link
-            href="/docs"
+          <button
+            onClick={() => setShowDocs(true)}
             className="flex h-8 w-8 items-center justify-center rounded-lg border transition-all"
             style={{
               borderColor: "var(--border)",
@@ -127,7 +131,7 @@ export function Header() {
               <line x1="16" y1="17" x2="8" y2="17"/>
               <polyline points="10 9 9 9 8 9"/>
             </svg>
-          </Link>
+          </button>
           <ThemeToggle />
 
           <ConnectButton.Custom>
@@ -166,5 +170,9 @@ export function Header() {
         </div>
       </div>
     </header>
+
+    {/* Docs Modal */}
+    {showDocs && <DocsModal onClose={() => setShowDocs(false)} />}
+  </>
   );
 }

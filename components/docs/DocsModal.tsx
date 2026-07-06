@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 const DOCS_SECTIONS = [
   { id: "getting-started", label: "Getting Started" },
@@ -17,7 +16,11 @@ const DOCS_SECTIONS = [
   { id: "security", label: "Security" },
 ];
 
-export function DocsModal() {
+interface DocsModalProps {
+  onClose: () => void;
+}
+
+export function DocsModal({ onClose }: DocsModalProps) {
   const [activeSection, setActiveSection] = useState("getting-started");
 
   return (
@@ -27,8 +30,8 @@ export function DocsModal() {
         style={{ background: "var(--bg-primary)", border: "1px solid var(--border)" }}
       >
         {/* Close Button */}
-        <Link
-          href="/"
+        <button
+          onClick={onClose}
           className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg transition-all hover:bg-red-500/20"
           style={{ color: "var(--text-secondary)" }}
         >
@@ -36,7 +39,7 @@ export function DocsModal() {
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
-        </Link>
+        </button>
 
         {/* Sidebar */}
         <aside

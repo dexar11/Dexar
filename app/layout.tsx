@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     description: "Dexar is a DEX aggregator on Arc Network. Swap, Send, and Bridge stablecoins with the best routes, AI-powered trading, and on-chain reputation scoring.",
     url: "https://dexar.app",
     siteName: "Dexar",
-    images: [{ url: "/dexar.png", width: 512, height: 512, alt: "Dexar" }],
+    images: [{ url: "/dexar sembol.png", width: 512, height: 512, alt: "Dexar" }],
     type: "website",
   },
   twitter: {
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     site: "@dexar_app",
     title: "Dexar",
     description: "Dexar is a DEX aggregator on Arc Network. Swap, Send, and Bridge stablecoins with the best routes, AI-powered trading, and on-chain reputation scoring.",
-    images: ["/dexar.png"],
+    images: ["/dexar sembol.png"],
   },
 };
 

@@ -55,14 +55,25 @@ export default function LeaderboardPage() {
   const PAGE_SIZE = 10;
 
   useEffect(() => {
-    supabase
-      .from("user_scores")
-      .select("address, swap_count, volume_usd", { count: "exact" })
-      .order("swap_count", { ascending: false })
-      .then(({ data: rows }) => {
-        setData(rows ?? []);
-        setLoading(false);
-      });
+    async function fetchAll() {
+      let all: LeaderboardEntry[] = [];
+      let from = 0;
+      const batch = 1000;
+      while (true) {
+        const { data: rows } = await supabase
+          .from("user_scores")
+          .select("address, swap_count, volume_usd")
+          .order("swap_count", { ascending: false })
+          .range(from, from + batch - 1);
+        if (!rows || rows.length === 0) break;
+        all = [...all, ...rows];
+        if (rows.length < batch) break;
+        from += batch;
+      }
+      setData(all);
+      setLoading(false);
+    }
+    fetchAll();
   }, []);
 
   const totalVolume  = data.reduce((s, r) => s + (r.volume_usd ?? 0), 0);

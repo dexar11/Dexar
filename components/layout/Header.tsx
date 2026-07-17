@@ -59,9 +59,9 @@ function ArbiLogo() {
     <Link href="/swap" className="flex items-center no-underline shrink-0" style={{ marginLeft: "8px" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/dexar sembol.png"
+        src="/dexar_wordmark_v2.png"
         alt="Dexar"
-        width={40}
+        width={100}
         height={40}
         className="rounded-xl"
       />

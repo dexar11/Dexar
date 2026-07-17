@@ -18,6 +18,7 @@ const NAV = [
   { href: "/wallet-stats", label: "Arc Wallet Stats", Icon: () => <Emoji e="📊" /> },
   { href: "/leaderboard",  label: "Leaderboard",      Icon: () => <Emoji e="🏆" /> },
   { href: "/reward",       label: "Reward",           Icon: () => <Emoji e="⭐" /> },
+  { href: "/docs",         label: "Docs",             Icon: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9693A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> },
   { href: "/profile",      label: "Profile",          Icon: () => <Emoji e="👤" /> },
 ];
 
@@ -60,10 +61,10 @@ function ArbiLogo() {
     <Link href="/swap" className="flex items-center no-underline shrink-0" style={{ marginLeft: "8px" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/dexar.png"
+        src="/dexar sembol.png"
         alt="Dexar"
-        width={100}
-        height={100}
+        width={40}
+        height={40}
         className="rounded-xl"
       />
     </Link>

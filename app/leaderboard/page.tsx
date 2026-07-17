@@ -51,13 +51,14 @@ export default function LeaderboardPage() {
   const { address } = useAccount();
   const [data,    setData]    = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page,    setPage]    = useState(1);
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     supabase
       .from("user_scores")
-      .select("address, swap_count, volume_usd")
+      .select("address, swap_count, volume_usd", { count: "exact" })
       .order("swap_count", { ascending: false })
-      .limit(100)
       .then(({ data: rows }) => {
         setData(rows ?? []);
         setLoading(false);
@@ -67,6 +68,9 @@ export default function LeaderboardPage() {
   const totalVolume  = data.reduce((s, r) => s + (r.volume_usd ?? 0), 0);
   const totalSwaps   = data.reduce((s, r) => s + (r.swap_count ?? 0), 0);
   const totalTraders = data.length;
+
+  const totalPages  = Math.ceil(totalTraders / PAGE_SIZE);
+  const pagedData   = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const myEntry  = address ? data.find(r => r.address.toLowerCase() === address.toLowerCase()) : null;
   const myRank   = address ? data.findIndex(r => r.address.toLowerCase() === address.toLowerCase()) + 1 : 0;
@@ -146,7 +150,8 @@ export default function LeaderboardPage() {
                 No data yet. Be the first to swap!
               </div>
             ) : (
-              data.map((row, i) => {
+              pagedData.map((row, i) => {
+                const globalRank = (page - 1) * PAGE_SIZE + i + 1;
                 const score  = fmtScore(row.swap_count, row.volume_usd);
                 const tier   = getTier(row.swap_count);
                 const isSelf = address?.toLowerCase() === row.address.toLowerCase();
@@ -163,7 +168,7 @@ export default function LeaderboardPage() {
 
                     {/* Rank */}
                     <span className="text-sm font-bold text-center" style={{ color: "var(--text-secondary)" }}>
-                      {i + 1}
+                      {globalRank}
                     </span>
 
                     {/* Trader */}
@@ -196,6 +201,61 @@ export default function LeaderboardPage() {
                   </div>
                 );
               })
+            )}
+
+            {/* Pagination */}
+            {!loading && totalPages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, totalTraders)} / {totalTraders}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setPage(1)}
+                    disabled={page === 1}
+                    className="px-2 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
+                    style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}
+                  >«</button>
+                  <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-2 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
+                    style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}
+                  >‹</button>
+
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let p: number;
+                    if (totalPages <= 5) p = i + 1;
+                    else if (page <= 3) p = i + 1;
+                    else if (page >= totalPages - 2) p = totalPages - 4 + i;
+                    else p = page - 2 + i;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className="w-7 h-7 rounded-lg text-xs font-bold transition-all"
+                        style={{
+                          background: page === p ? "#C9693A" : "var(--bg-input)",
+                          color:      page === p ? "#fff"    : "var(--text-secondary)",
+                        }}
+                      >{p}</button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="px-2 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
+                    style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}
+                  >›</button>
+                  <button
+                    onClick={() => setPage(totalPages)}
+                    disabled={page === totalPages}
+                    className="px-2 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
+                    style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}
+                  >»</button>
+                </div>
+              </div>
             )}
           </div>
 

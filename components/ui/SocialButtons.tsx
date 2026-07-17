@@ -1,8 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { DocsModal } from "@/components/docs/DocsModal";
-
 const links = [
   {
     href:  "/",
@@ -35,8 +32,6 @@ const links = [
 ];
 
 export function SocialButtons() {
-  const [showDocs, setShowDocs] = useState(false);
-
   return (
     <>
       {/* mb-16 on mobile to stay above the bottom nav bar (64px), mb-5 on desktop */}
@@ -67,38 +62,7 @@ export function SocialButtons() {
             {icon}
           </a>
         ))}
-        
-        {/* Docs Button - Opens Modal */}
-        <button
-          onClick={() => setShowDocs(true)}
-          aria-label="Documentation"
-          className="flex h-9 w-9 items-center justify-center rounded-xl border transition-all hover:scale-105"
-          style={{
-            background:  "var(--bg-card)",
-            borderColor: "var(--border)",
-            color:       "var(--text-secondary)",
-            boxShadow:   "0 2px 8px rgba(0,0,0,0.08)",
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLElement).style.borderColor = "#C9693A";
-            (e.currentTarget as HTMLElement).style.color = "#C9693A";
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-            (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-          }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
-        </button>
       </div>
-
-      {/* Docs Modal */}
-      {showDocs && <DocsModal onClose={() => setShowDocs(false)} />}
     </>
   );
 }

@@ -39,8 +39,19 @@ export function SwapCard() {
   const [estimate, setEstimate] = useState<EstimateResult | null>(null);
   const [errMsg,   setErrMsg]   = useState("");
 
-  const { data: balanceData, refetch: refetchBalIn }    = useBalance({ address, chainId: arcTestnet.id, token: TOKEN_ADDRESSES[tokenIn.symbol] });
-  const { data: balanceOutData, refetch: refetchBalOut } = useBalance({ address, chainId: arcTestnet.id, token: TOKEN_ADDRESSES[tokenOut.symbol] });
+  const tokenInAddress  = tokenIn.symbol  === "USDC" ? undefined : TOKEN_ADDRESSES[tokenIn.symbol];
+  const tokenOutAddress = tokenOut.symbol === "USDC" ? undefined : TOKEN_ADDRESSES[tokenOut.symbol];
+
+  const { data: balanceData,    refetch: refetchBalIn  } = useBalance({
+    address,
+    chainId: arcTestnet.id,
+    ...(tokenInAddress  ? { token: tokenInAddress  } : {}),
+  });
+  const { data: balanceOutData, refetch: refetchBalOut } = useBalance({
+    address,
+    chainId: arcTestnet.id,
+    ...(tokenOutAddress ? { token: tokenOutAddress } : {}),
+  });
 
   // Patch window.fetch to proxy Circle API calls (CORS fix)
   useEffect(() => { patchCircleFetch(); }, []);

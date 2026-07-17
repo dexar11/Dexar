@@ -53,6 +53,39 @@ export function SwapCard() {
     ...(tokenOutAddress ? { token: tokenOutAddress } : {}),
   });
 
+  // ERC-20 balances via direct RPC (wagmi useBalance unreliable on Arc Testnet)
+  const [ercBalances, setErcBalances] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!address) return;
+    const tokens = [
+      { symbol: "EURC",   addr: TOKEN_ADDRESSES["EURC"],   dec: 6 },
+      { symbol: "cirBTC", addr: TOKEN_ADDRESSES["cirBTC"], dec: 8 },
+    ];
+    const selector = "0x70a08231"; // balanceOf(address)
+    const padded   = address.slice(2).toLowerCase().padStart(64, "0");
+
+    Promise.all(
+      tokens.map(t =>
+        fetch("https://rpc.testnet.arc.network", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: 1, jsonrpc: "2.0", method: "eth_call",
+            params: [{ to: t.addr, data: selector + padded }, "latest"],
+          }),
+        })
+          .then(r => r.json())
+          .then(j => ({ symbol: t.symbol, val: Number(BigInt(j.result ?? "0x0")) / Math.pow(10, t.dec) }))
+          .catch(() => ({ symbol: t.symbol, val: 0 }))
+      )
+    ).then(results => {
+      const map: Record<string, number> = {};
+      results.forEach(r => { map[r.symbol] = r.val; });
+      setErcBalances(map);
+    });
+  }, [address]);
+
   // Patch window.fetch to proxy Circle API calls (CORS fix)
   useEffect(() => { patchCircleFetch(); }, []);
 
@@ -68,8 +101,13 @@ export function SwapCard() {
     return () => clearTimeout(timer);
   }, [amountIn, tokenIn.symbol, tokenOut.symbol, address]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const balanceFloat    = balanceData    ? Number(balanceData.value)    / Math.pow(10, balanceData.decimals)    : 0;
-  const balanceOutFloat = balanceOutData ? Number(balanceOutData.value) / Math.pow(10, balanceOutData.decimals) : 0;
+  // USDC → wagmi native balance, EURC/cirBTC → direct RPC
+  const balanceFloat    = tokenIn.symbol  === "USDC"
+    ? (balanceData    ? Number(balanceData.value)    / Math.pow(10, balanceData.decimals)    : 0)
+    : (ercBalances[tokenIn.symbol]  ?? 0);
+  const balanceOutFloat = tokenOut.symbol === "USDC"
+    ? (balanceOutData ? Number(balanceOutData.value) / Math.pow(10, balanceOutData.decimals) : 0)
+    : (ercBalances[tokenOut.symbol] ?? 0);
 
   // cirBTC gibi küçük değerli tokenlar için yeterli ondalık göster
   function fmtBalance(val: number, decimals: number): string {

@@ -96,12 +96,10 @@ export function BridgeCard() {
   // Patch window.fetch for Circle API CORS fix
   useEffect(() => { patchCircleFetch(); }, []);
 
-  // FROM balance — Arc Testnet USDC ERC-20
-  const USDC_ARC = "0x3600000000000000000000000000000000000000" as `0x${string}`;
+  // FROM balance — Arc Testnet USDC native balance (USDC = native gas token on Arc)
   const { data: fromBalance, refetch: refetchFrom } = useBalance({
     address,
     chainId: arcTestnet.id,
-    token:   USDC_ARC,
   });
   const fromBalFloat = fromBalance ? Number(fromBalance.value) / Math.pow(10, fromBalance.decimals) : 0;
   const fromBalStr   = fromBalFloat > 0 ? fromBalFloat.toFixed(4) : "0";
